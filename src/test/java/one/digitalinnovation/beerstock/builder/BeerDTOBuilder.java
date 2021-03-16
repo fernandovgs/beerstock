@@ -4,26 +4,32 @@ import lombok.Builder;
 import one.digitalinnovation.beerstock.domains.dtos.BeerDTO;
 import one.digitalinnovation.beerstock.domains.enums.BeerType;
 
+/**
+ * Builder is a creational pattern to make easier to generate object instances.
+ * It is particularly useful when a given object can be instanced in several ways.
+ * Source: https://refactoring.guru/pt-br/design-patterns/builder
+ */
+
 @Builder
 public class BeerDTOBuilder {
 
     @Builder.Default
-    private Long id = 1L;
+    private final Long id = 1L;
 
     @Builder.Default
-    private String name = "Brahma";
+    private final String name = "Brahma";
 
     @Builder.Default
-    private String brand = "Ambev";
+    private final String brand = "Ambev";
 
     @Builder.Default
-    private int max = 50;
+    private final int max = 50;
 
     @Builder.Default
-    private int quantity = 10;
+    private final int quantity = 10;
 
     @Builder.Default
-    private BeerType type = BeerType.LAGER;
+    private final BeerType type = BeerType.LAGER;
 
     public BeerDTO toBeerDTO() {
         return new BeerDTO(id,
