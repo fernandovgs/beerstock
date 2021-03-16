@@ -15,8 +15,10 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.Optional;
 
+import static org.hamcrest.Matchers.*;
 import static org.mockito.Mockito.when;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.hamcrest.MatcherAssert.assertThat;
 
 @ExtendWith(MockitoExtension.class)
 class BeerServiceTest {
@@ -34,18 +36,30 @@ class BeerServiceTest {
     @Test
     void whenBeerInformedThenItShouldBeCreated() throws BeerAlreadyRegisteredException {
         // given an informed beer
-        BeerDTO beerDTO = BeerDTOBuilder.builder().build().toBeerDTO();
-        Beer expected = beerMapper.toModel(beerDTO);
+        BeerDTO expectedDTO = BeerDTOBuilder.builder().build().toBeerDTO();
+        Beer expectedSavedBeer = beerMapper.toModel(expectedDTO);
 
         // when
-        when(beerRepository.findByName(beerDTO.getName())).thenReturn(Optional.empty());
-        when(beerRepository.save(expected)).thenReturn(expected);
+        when(beerRepository.findByName(expectedDTO.getName())).thenReturn(Optional.empty());
+        when(beerRepository.save(expectedSavedBeer)).thenReturn(expectedSavedBeer);
 
         // then
-        BeerDTO createdBeerDTO = beerService.createBeer(beerDTO);
+        BeerDTO createdBeerDTO = beerService.createBeer(expectedDTO);
 
-        assertEquals(createdBeerDTO.getId(), beerDTO.getId());
-        assertEquals(createdBeerDTO.getName(), beerDTO.getName());
+        // Assert using Hamcrest
+        // IMPORTANT: assertThat(ACTUAL, EXPECTED)
+        assertThat(createdBeerDTO.getId(), is(equalTo(expectedDTO.getId())));
+        assertThat(createdBeerDTO.getName(), is(equalTo(expectedDTO.getName())));
+        assertThat(createdBeerDTO.getQuantity(), is(equalTo(expectedDTO.getQuantity())));
+
+        // Assert using 'classic' junit assertions
+        // IMPORTANT: assertEquals(EXPECTED, ACTUAL)
+        assertEquals(expectedDTO.getId(), createdBeerDTO.getId());
+        assertEquals(expectedDTO.getName(), createdBeerDTO.getName());
+        assertEquals(expectedDTO.getQuantity(), createdBeerDTO.getQuantity());
+
+        // Other Hamcrest assertions
+        assertThat(createdBeerDTO.getQuantity(), is(greaterThan(2)));
     }
 
 }
