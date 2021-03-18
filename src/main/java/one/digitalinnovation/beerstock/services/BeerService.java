@@ -40,11 +40,30 @@ public class BeerService {
                 .collect(Collectors.toList());
     }
 
-    public void verifyIfIsAlreadyRegistered(String name) throws BeerAlreadyRegisteredException {
+    public void deleteById(Long id) throws BeerNotFoundException {
+        verifyIfExists(id);
+        beerRepository.deleteById(id);
+    }
+
+    /**
+     * This method is private because there is no use outside here
+     * @param name
+     * @throws BeerAlreadyRegisteredException
+     */
+    private void verifyIfIsAlreadyRegistered(String name) throws BeerAlreadyRegisteredException {
         Optional<Beer> optionalSavedBeer = beerRepository.findByName(name);
 
         if (optionalSavedBeer.isPresent()) {
             throw new BeerAlreadyRegisteredException(name);
         }
+    }
+
+    /**
+     * This method is private because there is no use outside here
+     * @param name
+     * @throws BeerNotFoundException
+     */
+    private Beer verifyIfExists(Long id) throws BeerNotFoundException{
+        return beerRepository.findById(id).orElseThrow(() -> new BeerNotFoundException(id));
     }
 }
