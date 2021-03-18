@@ -6,6 +6,7 @@ import one.digitalinnovation.beerstock.domains.entities.Beer;
 import one.digitalinnovation.beerstock.domains.mappers.BeerMapper;
 import one.digitalinnovation.beerstock.domains.repositories.BeerRepository;
 import one.digitalinnovation.beerstock.infrastructure.exceptions.BeerAlreadyRegisteredException;
+import one.digitalinnovation.beerstock.infrastructure.exceptions.BeerNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -23,6 +24,12 @@ public class BeerService {
         Beer beer = beerMapper.toModel(beerDTO);
         Beer savedBeer = beerRepository.save(beer);
         return beerMapper.toDTO(savedBeer);
+    }
+
+    public BeerDTO findByName(String name) throws BeerNotFoundException {
+        Beer foundBeer = beerRepository.findByName(name)
+                .orElseThrow(() -> new BeerNotFoundException(name));
+        return beerMapper.toDTO(foundBeer);
     }
 
     public void verifyIfIsAlreadyRegistered(String name) throws BeerAlreadyRegisteredException {
