@@ -1,6 +1,7 @@
 package one.digitalinnovation.beerstock.controllers;
 
 import lombok.AllArgsConstructor;
+import one.digitalinnovation.beerstock.controllers.docs.BeerControllerDocs;
 import one.digitalinnovation.beerstock.domains.dtos.BeerDTO;
 import one.digitalinnovation.beerstock.infrastructure.exceptions.BeerAlreadyRegisteredException;
 import one.digitalinnovation.beerstock.infrastructure.exceptions.BeerNotFoundException;
@@ -15,7 +16,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/v1/beers")
 @AllArgsConstructor(onConstructor = @__(@Autowired))
-public class BeerController {
+public class BeerController implements BeerControllerDocs {
 
     private final BeerService beerService;
 
