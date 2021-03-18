@@ -10,7 +10,9 @@ import one.digitalinnovation.beerstock.infrastructure.exceptions.BeerNotFoundExc
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 @AllArgsConstructor(onConstructor = @__(@Autowired))
@@ -30,6 +32,12 @@ public class BeerService {
         Beer foundBeer = beerRepository.findByName(name)
                 .orElseThrow(() -> new BeerNotFoundException(name));
         return beerMapper.toDTO(foundBeer);
+    }
+
+    public List<BeerDTO> listAll() {
+        return beerRepository.findAll().stream()
+                .map(beerMapper::toDTO)
+                .collect(Collectors.toList());
     }
 
     public void verifyIfIsAlreadyRegistered(String name) throws BeerAlreadyRegisteredException {

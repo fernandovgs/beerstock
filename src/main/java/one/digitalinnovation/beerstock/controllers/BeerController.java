@@ -33,7 +33,7 @@ public class BeerController implements BeerControllerDocs {
 
     @GetMapping
     public List<BeerDTO> listBeers() {
-        return null;
+        return beerService.listAll();
     }
 
     @DeleteMapping("/{id}")
