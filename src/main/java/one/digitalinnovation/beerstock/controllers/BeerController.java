@@ -15,8 +15,10 @@ import org.springframework.web.bind.annotation.*;
 import javax.validation.Valid;
 import java.util.List;
 
+import static one.digitalinnovation.beerstock.constants.BeerstockConstants.*;
+
 @RestController
-@RequestMapping("/api/v1/beers")
+@RequestMapping(BASE_URI_PATH + BEERS_URI_PATH)
 @AllArgsConstructor(onConstructor = @__(@Autowired))
 public class BeerController implements BeerControllerDocs {
 
@@ -28,7 +30,7 @@ public class BeerController implements BeerControllerDocs {
         return beerService.createBeer(beerDTO);
     }
 
-    @GetMapping("/{name}")
+    @GetMapping(NAME_URI_PATH)
     public BeerDTO findByName(@PathVariable String name) throws BeerNotFoundException {
         return beerService.findByName(name);
     }
@@ -38,20 +40,20 @@ public class BeerController implements BeerControllerDocs {
         return beerService.listAll();
     }
 
-    @DeleteMapping("/{id}")
+    @DeleteMapping(ID_URI_PATH)
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void deleteById(@PathVariable Long id) throws BeerNotFoundException {
         beerService.deleteById(id);
     }
 
-    @PatchMapping("/{id}/increment")
+    @PatchMapping(ID_URI_PATH + INCREMENT_URI_PATH)
     public BeerDTO increment(
             @PathVariable Long id,
             @RequestBody @Valid QuantityDTO quantityDTO
     ) throws BeerNotFoundException, BeerStockExceededException {
         return beerService.increment(id, quantityDTO.getQuantity());
     }
-    @PatchMapping("/{id}/decrement")
+    @PatchMapping(ID_URI_PATH + DECREMENT_URI_PATH)
     public BeerDTO decrement(
             @PathVariable Long id,
             @RequestBody @Valid QuantityDTO quantityDTO

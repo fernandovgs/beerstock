@@ -38,7 +38,7 @@ public interface BeerControllerDocs {
     })
     List<BeerDTO> listBeers();
 
-    @ApiOperation(value = "Delete a beer found by a given valid Id")
+    @ApiOperation(value = "Deletes a beer found by a given valid Id")
     @ApiResponses(value = {
             @ApiResponse(code = 204, message = "Success beer deleted in the system"),
             @ApiResponse(code = 404, message = "Beer with given id not found.")
