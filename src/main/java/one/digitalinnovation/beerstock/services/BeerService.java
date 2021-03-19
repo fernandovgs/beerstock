@@ -46,19 +46,6 @@ public class BeerService {
         beerRepository.deleteById(id);
     }
 
-    /**
-     * This method is private because there is no use outside here
-     * @param name beer name
-     * @throws BeerAlreadyRegisteredException when beer has been registered already
-     */
-    private void verifyIfIsAlreadyRegistered(String name) throws BeerAlreadyRegisteredException {
-        Optional<Beer> optionalSavedBeer = beerRepository.findByName(name);
-
-        if (optionalSavedBeer.isPresent()) {
-            throw new BeerAlreadyRegisteredException(name);
-        }
-    }
-
     public BeerDTO increment(Long id, int quantityToIncrement)
             throws BeerNotFoundException, BeerStockExceededException {
         Beer beerToIncrement = verifyIfExists(id);
@@ -81,6 +68,19 @@ public class BeerService {
         }
 
         throw new BeerStockExceededException(id, quantityToDecrement);
+    }
+
+    /**
+     * This method is private because there is no use outside here
+     * @param name beer name
+     * @throws BeerAlreadyRegisteredException when beer has been registered already
+     */
+    private void verifyIfIsAlreadyRegistered(String name) throws BeerAlreadyRegisteredException {
+        Optional<Beer> optionalSavedBeer = beerRepository.findByName(name);
+
+        if (optionalSavedBeer.isPresent()) {
+            throw new BeerAlreadyRegisteredException(name);
+        }
     }
 
     /**

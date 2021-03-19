@@ -16,9 +16,10 @@ public class ShopkeeperDTOBuilder {
     @Builder.Default
     private final String name = "Armazém do suco de cevada";
 
+    @Builder.Default
     private final List<BeerDTO> beers = Collections.emptyList();
 
-    public ShopkeeperDTO toShopkeerDTO() {
+    public ShopkeeperDTO toShopkeeperDTO() {
         return new ShopkeeperDTO(
                 id,
                 name,
