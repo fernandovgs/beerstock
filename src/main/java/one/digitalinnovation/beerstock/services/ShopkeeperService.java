@@ -2,9 +2,11 @@ package one.digitalinnovation.beerstock.services;
 
 import lombok.AllArgsConstructor;
 import one.digitalinnovation.beerstock.domains.dtos.ShopkeeperDTO;
+import one.digitalinnovation.beerstock.domains.entities.Beer;
 import one.digitalinnovation.beerstock.domains.entities.Shopkeeper;
 import one.digitalinnovation.beerstock.domains.mappers.ShopkeeperMapper;
 import one.digitalinnovation.beerstock.domains.repositories.ShopkeeperRepository;
+import one.digitalinnovation.beerstock.infrastructure.exceptions.BeerNotFoundException;
 import one.digitalinnovation.beerstock.infrastructure.exceptions.ShopkeeperAlreadyRegisteredException;
 import one.digitalinnovation.beerstock.infrastructure.exceptions.ShopkeeperNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,7 +34,9 @@ public class ShopkeeperService {
     }
 
     public ShopkeeperDTO findByName(String name) throws ShopkeeperNotFoundException {
-        return null;
+        Shopkeeper foundShopkeeper = shopkeeperRepository.findByName(name)
+                .orElseThrow(() -> new ShopkeeperNotFoundException(name));
+        return shopkeeperMapper.toDTO(foundShopkeeper);
     }
 
     public List<ShopkeeperDTO> listShopkepeers() {

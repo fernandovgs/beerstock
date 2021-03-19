@@ -1,11 +1,16 @@
 package one.digitalinnovation.beerstock.service;
 
+import one.digitalinnovation.beerstock.builder.BeerDTOBuilder;
 import one.digitalinnovation.beerstock.builder.ShopkeeperDTOBuilder;
+import one.digitalinnovation.beerstock.domains.dtos.BeerDTO;
 import one.digitalinnovation.beerstock.domains.dtos.ShopkeeperDTO;
+import one.digitalinnovation.beerstock.domains.entities.Beer;
 import one.digitalinnovation.beerstock.domains.entities.Shopkeeper;
 import one.digitalinnovation.beerstock.domains.mappers.ShopkeeperMapper;
 import one.digitalinnovation.beerstock.domains.repositories.ShopkeeperRepository;
+import one.digitalinnovation.beerstock.infrastructure.exceptions.BeerNotFoundException;
 import one.digitalinnovation.beerstock.infrastructure.exceptions.ShopkeeperAlreadyRegisteredException;
+import one.digitalinnovation.beerstock.infrastructure.exceptions.ShopkeeperNotFoundException;
 import one.digitalinnovation.beerstock.services.ShopkeeperService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -57,6 +62,37 @@ public class ShopkeeperServiceTest {
         assertThrows(
                 ShopkeeperAlreadyRegisteredException.class,
                 () -> shopkeeperService.createShopkeeper(expectedShopkeeperDTO)
+        );
+    }
+
+    @Test
+    void whenValidShopkeeperNameIsGivenThenReturnAShopkeeper() throws ShopkeeperNotFoundException {
+        // given
+        ShopkeeperDTO expectedFoundShopkeeperDTO = ShopkeeperDTOBuilder.builder().build().toShopkeeperDTO();
+        Shopkeeper expectedFoundShopkeeper = shopkeeperMapper.toModel(expectedFoundShopkeeperDTO);
+
+        // when
+        when(shopkeeperRepository.findByName((expectedFoundShopkeeperDTO.getName())))
+                .thenReturn(Optional.of(expectedFoundShopkeeper));
+
+        // then
+        ShopkeeperDTO foundShopkeeperDTO = shopkeeperService.findByName(expectedFoundShopkeeperDTO.getName());
+
+        assertThat(expectedFoundShopkeeperDTO, is(equalTo(foundShopkeeperDTO)));
+    }
+
+    @Test
+    void whenUnregisteredShopkeeperInformedThenAnExceptionShouldBeThrown() {
+        // given an informed beer
+        ShopkeeperDTO expectedShopkeeperDTO = ShopkeeperDTOBuilder.builder().build().toShopkeeperDTO();
+
+        // when
+        when(shopkeeperRepository.findByName(expectedShopkeeperDTO.getName())).thenReturn(Optional.empty());
+
+        // then
+        assertThrows(
+                ShopkeeperNotFoundException.class,
+                () -> shopkeeperService.findByName(expectedShopkeeperDTO.getName())
         );
     }
 }
