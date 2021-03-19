@@ -4,7 +4,6 @@ import one.digitalinnovation.beerstock.builder.BeerDTOBuilder;
 import one.digitalinnovation.beerstock.controllers.BeerController;
 import one.digitalinnovation.beerstock.domains.dtos.BeerDTO;
 import one.digitalinnovation.beerstock.domains.dtos.QuantityDTO;
-import one.digitalinnovation.beerstock.infrastructure.exceptions.BeerAlreadyRegisteredException;
 import one.digitalinnovation.beerstock.infrastructure.exceptions.BeerNotFoundException;
 import one.digitalinnovation.beerstock.infrastructure.exceptions.BeerStockExceededException;
 import one.digitalinnovation.beerstock.services.BeerService;
@@ -17,7 +16,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.web.PageableHandlerMethodArgumentResolver;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.servlet.view.json.MappingJackson2JsonView;
 
