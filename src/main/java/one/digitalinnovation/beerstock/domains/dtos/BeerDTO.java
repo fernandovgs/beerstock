@@ -33,7 +33,7 @@ public class BeerDTO {
     private Integer max;
 
     @NotNull
-    @Max(100)
+    @Max(500)
     private Integer quantity;
 
     @Enumerated(EnumType.STRING)
