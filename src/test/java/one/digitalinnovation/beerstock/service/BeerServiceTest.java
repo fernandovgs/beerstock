@@ -7,6 +7,7 @@ import one.digitalinnovation.beerstock.domains.mappers.BeerMapper;
 import one.digitalinnovation.beerstock.domains.repositories.BeerRepository;
 import one.digitalinnovation.beerstock.infrastructure.exceptions.BeerAlreadyRegisteredException;
 import one.digitalinnovation.beerstock.infrastructure.exceptions.BeerNotFoundException;
+import one.digitalinnovation.beerstock.infrastructure.exceptions.BeerStockExceededException;
 import one.digitalinnovation.beerstock.services.BeerService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -152,5 +153,22 @@ class BeerServiceTest {
         BeerDTO expectedDeletedBeerDTO = BeerDTOBuilder.builder().build().toBeerDTO();
         when(beerRepository.findById(expectedDeletedBeerDTO.getId())).thenReturn(Optional.empty());
         assertThrows(BeerNotFoundException.class, () -> beerService.deleteById(expectedDeletedBeerDTO.getId()));
+    }
+
+    @Test
+    void whenIncrementIsCalledThenIncrementBeerStock() throws BeerNotFoundException, BeerStockExceededException {
+        BeerDTO expectedBeerDTO = BeerDTOBuilder.builder().build().toBeerDTO();
+        Beer expectedBeer = beerMapper.toModel((expectedBeerDTO));
+
+        int quantityToIncrement = 10;
+        int expectedQuantityAfterIncrement = expectedBeerDTO.getQuantity() + quantityToIncrement;
+
+        when(beerRepository.findById(expectedBeerDTO.getId())).thenReturn(Optional.of(expectedBeer));
+        when(beerRepository.save(expectedBeer)).thenReturn(expectedBeer);
+
+        BeerDTO incrementedBeerDTO = beerService.increment(expectedBeerDTO.getId(), quantityToIncrement);
+
+        assertThat(expectedQuantityAfterIncrement, equalTo(incrementedBeerDTO.getQuantity()));
+        assertThat(expectedQuantityAfterIncrement, lessThan(expectedBeerDTO.getMax()));
     }
 }

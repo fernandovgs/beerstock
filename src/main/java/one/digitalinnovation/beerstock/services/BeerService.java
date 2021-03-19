@@ -47,8 +47,8 @@ public class BeerService {
 
     /**
      * This method is private because there is no use outside here
-     * @param name
-     * @throws BeerAlreadyRegisteredException
+     * @param name beer name
+     * @throws BeerAlreadyRegisteredException when beer has been registered already
      */
     private void verifyIfIsAlreadyRegistered(String name) throws BeerAlreadyRegisteredException {
         Optional<Beer> optionalSavedBeer = beerRepository.findByName(name);
@@ -58,10 +58,23 @@ public class BeerService {
         }
     }
 
+    public BeerDTO increment(Long id, int quantityToIncrement) throws BeerNotFoundException {
+            Optional<Beer> optionalBeer = beerRepository.findById(id);
+
+            if (optionalBeer.isPresent()) {
+                Beer beer = optionalBeer.get();
+                beer.setQuantity(beer.getQuantity() + quantityToIncrement);
+
+                return beerMapper.toDTO(beerRepository.save(beer));
+            } else {
+                throw new BeerNotFoundException(id);
+            }
+    }
+
     /**
      * This method is private because there is no use outside here
-     * @param name
-     * @throws BeerNotFoundException
+     * @param id id to search
+     * @throws BeerNotFoundException in case of no beer is found, given id
      */
     private Beer verifyIfExists(Long id) throws BeerNotFoundException{
         return beerRepository.findById(id).orElseThrow(() -> new BeerNotFoundException(id));
