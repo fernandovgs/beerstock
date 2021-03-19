@@ -4,7 +4,6 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import one.digitalinnovation.beerstock.domains.entities.Beer;
 
 import javax.persistence.*;
 import java.util.List;
@@ -23,5 +22,5 @@ public class ShopkeeperDTO {
     private String name;
 
     @ManyToMany
-    private List<Beer> beers;
+    private List<BeerDTO> beers;
 }

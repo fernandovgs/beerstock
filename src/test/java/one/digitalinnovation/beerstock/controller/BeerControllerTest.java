@@ -46,7 +46,6 @@ class BeerControllerTest {
 
     @BeforeEach
     void setUp() {
-//        TODO study each builder method
         mockMvc = MockMvcBuilders.standaloneSetup(beerController)
             .setCustomArgumentResolvers(new PageableHandlerMethodArgumentResolver())
             .setViewResolvers((s, locale) -> new MappingJackson2JsonView())
