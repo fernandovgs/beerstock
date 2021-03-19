@@ -173,6 +173,17 @@ class BeerServiceTest {
     }
 
     @Test
+    void whenIncrementValueIsGreaterThanAllowedThenThrowException() {
+        BeerDTO expectedBeerDTO = BeerDTOBuilder.builder().build().toBeerDTO();
+        Beer expectedBeer = beerMapper.toModel(expectedBeerDTO);
+
+        when(beerRepository.findById(expectedBeerDTO.getId())).thenReturn(Optional.of(expectedBeer));
+
+        int invalidQuantity = 41; // edge case: 10 + 41 > 50
+        assertThrows(BeerStockExceededException.class, () -> beerService.increment(INVALID_BEER_ID, invalidQuantity));
+    }
+
+    @Test
     void whenDecrementIsCalledThenIncrementBeerStock() throws Exception {
         BeerDTO expectedBeerDTO = BeerDTOBuilder.builder().build().toBeerDTO();
         Beer expectedBeer = beerMapper.toModel((expectedBeerDTO));
@@ -188,5 +199,16 @@ class BeerServiceTest {
 
         assertThat(expectedQuantityAfterIncrement, equalTo(incrementedBeerDTO.getQuantity()));
         assertThat(expectedQuantityAfterIncrement, lessThan(expectedBeerDTO.getMax()));
+    }
+
+    @Test
+    void whenDecrementValueIsGreaterThanAllowedThenThrowException() {
+        BeerDTO expectedBeerDTO = BeerDTOBuilder.builder().build().toBeerDTO();
+        Beer expectedBeer = beerMapper.toModel(expectedBeerDTO);
+
+        when(beerRepository.findById(expectedBeerDTO.getId())).thenReturn(Optional.of(expectedBeer));
+
+        int invalidQuantity = 11; // edge case: 10 - 11 < 0
+        assertThrows(BeerStockExceededException.class, () -> beerService.decrement(INVALID_BEER_ID, invalidQuantity));
     }
 }
