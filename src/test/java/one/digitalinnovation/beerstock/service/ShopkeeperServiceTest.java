@@ -18,6 +18,8 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.util.Collections;
+import java.util.List;
 import java.util.Optional;
 
 import static org.hamcrest.Matchers.*;
@@ -27,7 +29,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-public class ShopkeeperServiceTest {
+class ShopkeeperServiceTest {
 
     private final ShopkeeperMapper shopkeeperMapper = ShopkeeperMapper.INSTANCE;
 
@@ -81,6 +83,7 @@ public class ShopkeeperServiceTest {
         assertThat(expectedFoundShopkeeperDTO, is(equalTo(foundShopkeeperDTO)));
     }
 
+
     @Test
     void whenUnregisteredShopkeeperInformedThenAnExceptionShouldBeThrown() {
         // given an informed beer
@@ -94,5 +97,25 @@ public class ShopkeeperServiceTest {
                 ShopkeeperNotFoundException.class,
                 () -> shopkeeperService.findByName(expectedShopkeeperDTO.getName())
         );
+    }
+
+    @Test
+    void whenListShopkeeperIsCalledThenReturnListOfShopkeepers() {
+        ShopkeeperDTO expectedFoundShopkeeperDTO = ShopkeeperDTOBuilder.builder().build().toShopkeeperDTO();
+        Shopkeeper expectedFoundShopkeeper = shopkeeperMapper.toModel(expectedFoundShopkeeperDTO);
+
+        when(shopkeeperRepository.findAll()).thenReturn(Collections.singletonList(expectedFoundShopkeeper));
+        List<ShopkeeperDTO> foundShopkeeperDTOS = shopkeeperService.listAll();
+
+        assertThat(foundShopkeeperDTOS, is(not(empty())));
+        assertThat(foundShopkeeperDTOS.get(0), is(equalTo(expectedFoundShopkeeperDTO)));
+    }
+
+    @Test
+    void whenListShopkeeperIsCalledThenReturnEmptyList() {
+        when(shopkeeperRepository.findAll()).thenReturn(Collections.emptyList());
+        List<ShopkeeperDTO> foundShopkeeperDTOS = shopkeeperService.listAll();
+
+        assertThat(foundShopkeeperDTOS, is(empty()));
     }
 }

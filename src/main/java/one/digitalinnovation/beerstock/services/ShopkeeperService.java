@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 @AllArgsConstructor(onConstructor = @__(@Autowired))
@@ -39,8 +40,10 @@ public class ShopkeeperService {
         return shopkeeperMapper.toDTO(foundShopkeeper);
     }
 
-    public List<ShopkeeperDTO> listShopkepeers() {
-        return null;
+    public List<ShopkeeperDTO> listAll() {
+        return shopkeeperRepository.findAll().stream()
+                .map(shopkeeperMapper::toDTO)
+                .collect(Collectors.toList());
     }
 
     public ShopkeeperDTO addBeersToShopkeeper(Long id, List<Long> beerIds) throws ShopkeeperNotFoundException {
