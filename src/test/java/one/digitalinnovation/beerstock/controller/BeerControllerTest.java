@@ -195,4 +195,42 @@ class BeerControllerTest {
                 .content(asJsonString(quantityDTO)))
                 .andExpect(status().isBadRequest());
     }
+
+    @Test
+    void whenPATCHIsCalledToDecrementBeerThenOkStatusIsReturned() throws Exception {
+        QuantityDTO quantityDTO = QuantityDTO.builder().quantity(10).build(); // edge case: 10 - 10 >= 0
+        BeerDTO beerDTO = BeerDTOBuilder.builder().build().toBeerDTO();
+
+        beerDTO.setQuantity(beerDTO.getQuantity() - quantityDTO.getQuantity());
+
+        when(beerService.decrement(VALID_BEER_ID, quantityDTO.getQuantity())).thenReturn(beerDTO);
+
+        var urlPath = BEER_API_URL_PATH + "/" + VALID_BEER_ID + "/" + BEER_API_SUBPATH_DECREMENT_URL;
+        mockMvc.perform(patch(urlPath)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(asJsonString(quantityDTO)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.name", is(beerDTO.getName())))
+                .andExpect(jsonPath("$.brand", is(beerDTO.getBrand())))
+                .andExpect(jsonPath("$.beerType", is(beerDTO.getBeerType().toString())))
+                .andExpect(jsonPath("$.quantity", is(beerDTO.getQuantity())));
+    }
+
+    @Test
+    void whenPATCHIsCalledToInvalidDecrementBeerThenBadRequestStatusIsReturned() throws Exception {
+        QuantityDTO quantityDTO = QuantityDTO.builder().quantity(11).build(); // edge case: 10 - 11 < 0
+        BeerDTO beerDTO = BeerDTOBuilder.builder().build().toBeerDTO();
+
+        beerDTO.setQuantity(beerDTO.getQuantity() - quantityDTO.getQuantity());
+
+        doThrow(BeerStockExceededException.class)
+                .when(beerService)
+                .decrement(VALID_BEER_ID, quantityDTO.getQuantity());
+
+        var urlPath = BEER_API_URL_PATH + "/" + VALID_BEER_ID + "/" + BEER_API_SUBPATH_DECREMENT_URL;
+        mockMvc.perform(patch(urlPath)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(asJsonString(quantityDTO)))
+                .andExpect(status().isBadRequest());
+    }
 }
