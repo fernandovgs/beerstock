@@ -46,6 +46,11 @@ public class ShopkeeperService {
                 .collect(Collectors.toList());
     }
 
+    public void deleteById(Long id) throws ShopkeeperNotFoundException {
+        verifyIfExists(id);
+        shopkeeperRepository.deleteById(id);
+    }
+
     public ShopkeeperDTO addBeersToShopkeeper(Long id, List<Long> beerIds) throws ShopkeeperNotFoundException {
         return null;
     }
@@ -60,5 +65,9 @@ public class ShopkeeperService {
         if (optionalShopkeeper.isPresent()) {
             throw new ShopkeeperAlreadyRegisteredException(name);
         }
+    }
+
+    private Shopkeeper verifyIfExists(Long id) throws ShopkeeperNotFoundException{
+        return shopkeeperRepository.findById(id).orElseThrow(() -> new ShopkeeperNotFoundException(id));
     }
 }

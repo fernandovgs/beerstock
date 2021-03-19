@@ -1,14 +1,10 @@
 package one.digitalinnovation.beerstock.service;
 
-import one.digitalinnovation.beerstock.builder.BeerDTOBuilder;
 import one.digitalinnovation.beerstock.builder.ShopkeeperDTOBuilder;
-import one.digitalinnovation.beerstock.domains.dtos.BeerDTO;
 import one.digitalinnovation.beerstock.domains.dtos.ShopkeeperDTO;
-import one.digitalinnovation.beerstock.domains.entities.Beer;
 import one.digitalinnovation.beerstock.domains.entities.Shopkeeper;
 import one.digitalinnovation.beerstock.domains.mappers.ShopkeeperMapper;
 import one.digitalinnovation.beerstock.domains.repositories.ShopkeeperRepository;
-import one.digitalinnovation.beerstock.infrastructure.exceptions.BeerNotFoundException;
 import one.digitalinnovation.beerstock.infrastructure.exceptions.ShopkeeperAlreadyRegisteredException;
 import one.digitalinnovation.beerstock.infrastructure.exceptions.ShopkeeperNotFoundException;
 import one.digitalinnovation.beerstock.services.ShopkeeperService;
@@ -117,5 +113,30 @@ class ShopkeeperServiceTest {
         List<ShopkeeperDTO> foundShopkeeperDTOS = shopkeeperService.listAll();
 
         assertThat(foundShopkeeperDTOS, is(empty()));
+    }
+
+    @Test
+    void whenExclusionIsCalledWithValidIdThenAShopkeeperShouldBeDeleted() throws ShopkeeperNotFoundException {
+        ShopkeeperDTO expectedDeletedShopkeeperDTO = ShopkeeperDTOBuilder.builder().build().toShopkeeperDTO();
+        Shopkeeper expectedDeletedShopkeeper = shopkeeperMapper.toModel(expectedDeletedShopkeeperDTO);
+
+        when(shopkeeperRepository.findById(expectedDeletedShopkeeperDTO.getId()))
+                .thenReturn(Optional.of(expectedDeletedShopkeeper));
+        doNothing().when(shopkeeperRepository).deleteById(expectedDeletedShopkeeperDTO.getId());
+
+        shopkeeperService.deleteById(expectedDeletedShopkeeperDTO.getId());
+
+        verify(shopkeeperRepository, times(1)).findById(expectedDeletedShopkeeperDTO.getId());
+        verify(shopkeeperRepository, times(1)).deleteById(expectedDeletedShopkeeperDTO.getId());
+    }
+
+    @Test
+    void whenExclusionIsCalledWithInvalidIdThenAShopkeeperShouldBeDeleted() {
+        ShopkeeperDTO expectedDeletedShopkeeperDTO = ShopkeeperDTOBuilder.builder().build().toShopkeeperDTO();
+
+        when(shopkeeperRepository.findById(expectedDeletedShopkeeperDTO.getId())).thenReturn(Optional.empty());
+
+        assertThrows(ShopkeeperNotFoundException.class, () -> shopkeeperService
+                .deleteById(expectedDeletedShopkeeperDTO.getId()));
     }
 }
