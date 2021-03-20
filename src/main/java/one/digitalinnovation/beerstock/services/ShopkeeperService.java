@@ -77,8 +77,28 @@ public class ShopkeeperService {
     }
 
     public ShopkeeperDTO removeBeersFromShopkeeper(Long id, List<Long> beerIds)
-            throws ShopkeeperNotFoundException, BeerNotFoundException {
-        return null;
+            throws ShopkeeperNotFoundException, BeerNotFoundException, NoBeerProvidedException {
+        Shopkeeper shopkeeper = verifyIfExists(id);
+        List<Beer> beers = new ArrayList<>();
+
+        if (beerIds == null || beerIds.isEmpty()) {
+            throw new NoBeerProvidedException();
+        }
+
+        for (Long beerId: beerIds) {
+            Beer beer = beerService.findById(beerId);
+            beers.add(beer);
+        }
+
+        shopkeeper.setBeers(
+                shopkeeper.getBeers()
+                        .stream()
+                        .filter(e -> !beerIds.contains(e.getId()))
+                        .collect(Collectors.toList()));
+
+        Shopkeeper savedShopkeeper = shopkeeperRepository.save(shopkeeper);
+
+        return shopkeeperMapper.toDTO(savedShopkeeper);
     }
 
     private void verifyIfIsAlreadyRegistered(String name) throws ShopkeeperAlreadyRegisteredException {

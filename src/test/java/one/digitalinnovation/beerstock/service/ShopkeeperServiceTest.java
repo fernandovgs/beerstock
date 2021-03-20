@@ -230,7 +230,7 @@ class ShopkeeperServiceTest {
     }
 
     @Test
-    void whenValidBeerIdAndInvalidShopkeeperInformedThenAnExceptionShouldBeThrown()
+    void whenValidBeerIdAndInvalidShopkeeperInformedThenAnExceptionShouldBeThrownWhenAdding()
             throws BeerNotFoundException {
 // Given a shopkeeper and a beer that should be added to shopkeeper's list
         ShopkeeperDTO expectedShopkeeperToFail = ShopkeeperDTOBuilder.builder().build().toShopkeeperDTO();
@@ -244,7 +244,7 @@ class ShopkeeperServiceTest {
     }
 
     @Test
-    void whenNoBeersIdsAndValidShopkeeperInformedThenAnExceptionShouldBeThrown() {
+    void whenNoBeersIdsAndValidShopkeeperInformedThenAnExceptionShouldBeThrownWhenAdding() {
         ShopkeeperDTO expectedShopkeeperToFail = ShopkeeperDTOBuilder.builder().build().toShopkeeperDTO();
         Shopkeeper expectedShopkeeper = shopkeeperMapper.toModel(expectedShopkeeperToFail);
 
@@ -258,7 +258,8 @@ class ShopkeeperServiceTest {
     }
 
     @Test
-    void whenInvalidBeerIdAndValidShopkeeperInformedThenABeerShouldBeAddedToShopkeeperList() throws BeerNotFoundException {
+    void whenInvalidBeerIdAndValidShopkeeperInformedThenABeerShouldBeAddedToShopkeeperList()
+            throws BeerNotFoundException {
         ShopkeeperDTO expectedShopkeeperToFail = ShopkeeperDTOBuilder.builder().build().toShopkeeperDTO();
         Shopkeeper expectedShopkeeper = shopkeeperMapper.toModel(expectedShopkeeperToFail);
 
@@ -270,5 +271,96 @@ class ShopkeeperServiceTest {
 
         assertThrows(BeerNotFoundException.class, () -> shopkeeperService
                 .addBeersToShopkeeper(expectedShopkeeperToFail.getId(), invalidBeerIdList));
+    }
+
+    @Test
+    void whenValidBeerIdAndValidShopkeeperInformedThenABeerShouldBeRemovedFromShopkeeperList()
+            throws ShopkeeperNotFoundException, BeerNotFoundException, NoBeerProvidedException {
+        // Given a shopkeeper and a beer that should be added to shopkeeper's list
+        ShopkeeperDTO expectedShopkeeperDTO = ShopkeeperDTOBuilder.builder().build().toShopkeeperDTO();
+        Shopkeeper expectedShopkeeper = shopkeeperMapper.toModel(expectedShopkeeperDTO);
+
+        BeerDTO expectedRemovedBeerDTO = BeerDTOBuilder.builder().build().toBeerDTO();
+        Beer expectedRemovedBeer = beerMapper.toModel(expectedRemovedBeerDTO);
+
+        List<Long> expectedSingleBeerId = Collections.singletonList(1L);
+
+        when(shopkeeperRepository.findById(expectedShopkeeperDTO.getId()))
+                .thenReturn(Optional.of(expectedShopkeeper));
+
+        for (Long beerId: expectedSingleBeerId) {
+            when(beerService.findById(beerId)).thenReturn(expectedRemovedBeer);
+        }
+
+        when(shopkeeperRepository.save(expectedShopkeeper)).thenReturn(expectedShopkeeper);
+
+        ShopkeeperDTO actualShopkeeperDTO = shopkeeperService
+                .removeBeersFromShopkeeper(expectedShopkeeperDTO.getId(), expectedSingleBeerId);
+
+        assertThat(actualShopkeeperDTO.getId(), is(equalTo(expectedShopkeeperDTO.getId())));
+        assertThat(actualShopkeeperDTO.getBeers(), is(empty()));
+    }
+
+    @Test
+    void whenValidBeersIdsAndValidShopkeeperInformedThenABeerShouldBeRemovedFromShopkeeperList()
+            throws BeerNotFoundException, NoBeerProvidedException, ShopkeeperNotFoundException {
+        // Given a shopkeeper and number of beers that should be added t shopkeeper's list
+        ShopkeeperDTO expectedShopkeeperDTO = ShopkeeperDTOBuilder.builder().build().toShopkeeperDTO();
+        Shopkeeper expectedShopkeeper = shopkeeperMapper.toModel(expectedShopkeeperDTO);
+
+        List<Long> expectedBeerIDs = new ArrayList<>();
+        Collections.addAll(expectedBeerIDs, 1L, 2L, 3L);
+
+        // adding beers' models and DTOs to it's respective lists
+        for (Long beerId : expectedBeerIDs) {
+            BeerDTO expectedBeerDTO = BeerDTOBuilder.builder().build().toBeerDTO();
+            expectedBeerDTO.setId(beerId);
+            expectedBeerDTO.setName(expectedBeerDTO.getName() + beerId);
+
+            Beer expectedBeer = beerMapper.toModel(expectedBeerDTO);
+
+            // "when" conditions for each beer
+            when(beerService.findById(beerId)).thenReturn(expectedBeer);
+        }
+
+        when(shopkeeperRepository.findById(expectedShopkeeperDTO.getId()))
+                .thenReturn(Optional.of(expectedShopkeeper));
+
+
+        when(shopkeeperRepository.save(expectedShopkeeper)).thenReturn(expectedShopkeeper);
+
+        ShopkeeperDTO actualShopkeeperDTO = shopkeeperService
+                .removeBeersFromShopkeeper(expectedShopkeeperDTO.getId(), expectedBeerIDs);
+
+        assertThat(actualShopkeeperDTO.getId(), is(equalTo(expectedShopkeeperDTO.getId())));
+        assertThat(actualShopkeeperDTO.getBeers(), is(empty()));
+    }
+
+    @Test
+    void whenValidBeerIdAndInvalidShopkeeperInformedThenAnExceptionShouldBeThrownWhenRemoving()
+            throws BeerNotFoundException {
+// Given a shopkeeper and a beer that should be added to shopkeeper's list
+        ShopkeeperDTO expectedShopkeeperToFail = ShopkeeperDTOBuilder.builder().build().toShopkeeperDTO();
+
+        List<Long> expectedSingleBeerId = Collections.singletonList(1L);
+
+        when(shopkeeperRepository.findById(expectedShopkeeperToFail.getId())).thenReturn(Optional.empty());
+
+        assertThrows(ShopkeeperNotFoundException.class, () -> shopkeeperService
+                .removeBeersFromShopkeeper(expectedShopkeeperToFail.getId(), expectedSingleBeerId));
+    }
+
+    @Test
+    void whenNoBeersIdsAndValidShopkeeperInformedThenAnExceptionShouldBeThrownWhenRemoving() {
+        ShopkeeperDTO expectedShopkeeperToFail = ShopkeeperDTOBuilder.builder().build().toShopkeeperDTO();
+        Shopkeeper expectedShopkeeper = shopkeeperMapper.toModel(expectedShopkeeperToFail);
+
+        List<Long> emptyBeerIdList = new ArrayList<>();
+
+        when(shopkeeperRepository.findById(expectedShopkeeperToFail.getId()))
+                .thenReturn(Optional.of(expectedShopkeeper));
+
+        assertThrows(NoBeerProvidedException.class, () -> shopkeeperService
+                .removeBeersFromShopkeeper(expectedShopkeeperToFail.getId(), emptyBeerIdList));
     }
 }
