@@ -42,13 +42,13 @@ public class ShopkeeperController implements ShopkeeperControllerDocs {
 
     }
 
-    @PostMapping(ID_URI_PATH)
+    @PostMapping(ID_URI_PATH + ADD_BEER_TO_SHOPKEEPER_URI_PATH)
     public ShopkeeperDTO addBeersToShopkeeper(Long id, List<Long> beerIds)
             throws ShopkeeperNotFoundException, BeerNotFoundException {
         return null;
     }
 
-    @PostMapping(ID_URI_PATH)
+    @PostMapping(ID_URI_PATH + RM_BEER_TO_SHOPKEEPER_URI_PATH)
     public ShopkeeperDTO removeBeersFromShopkeeper(Long id, List<Long> beerIds)
             throws ShopkeeperNotFoundException, BeerNotFoundException {
         return null;

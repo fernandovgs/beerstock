@@ -15,7 +15,7 @@ import org.mapstruct.factory.Mappers;
 public interface ShopkeeperMapper {
     ShopkeeperMapper INSTANCE = Mappers.getMapper(ShopkeeperMapper.class);
 
-    Shopkeeper toModel(ShopkeeperDTO beerDTO);
+    Shopkeeper toModel(ShopkeeperDTO shopkeeperDTO);
 
-    ShopkeeperDTO toDTO(Shopkeeper beer);
+    ShopkeeperDTO toDTO(Shopkeeper shopkeeper);
 }

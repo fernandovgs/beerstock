@@ -42,13 +42,13 @@ public class BeerService {
     }
 
     public void deleteById(Long id) throws BeerNotFoundException {
-        verifyIfExists(id);
+        findById(id);
         beerRepository.deleteById(id);
     }
 
     public BeerDTO increment(Long id, int quantityToIncrement)
             throws BeerNotFoundException, BeerStockExceededException {
-        Beer beerToIncrement = verifyIfExists(id);
+        Beer beerToIncrement = findById(id);
 
         if (beerToIncrement.getQuantity() + quantityToIncrement <= beerToIncrement.getMax()) {
             beerToIncrement.setQuantity(beerToIncrement.getQuantity() + quantityToIncrement);
@@ -60,7 +60,7 @@ public class BeerService {
 
     public BeerDTO decrement(Long id, int quantityToDecrement)
             throws BeerNotFoundException, BeerStockExceededException {
-        Beer beerToDecrement = verifyIfExists(id);
+        Beer beerToDecrement = findById(id);
 
         if (beerToDecrement.getQuantity() - quantityToDecrement >= 0) {
             beerToDecrement.setQuantity(beerToDecrement.getQuantity() - quantityToDecrement);
@@ -84,11 +84,13 @@ public class BeerService {
     }
 
     /**
-     * This method is private because there is no use outside here
-     * @param id id to search
-     * @throws BeerNotFoundException in case of no beer is found, given id
+     * This method was turned to public because there use outside this class.
+     * Also, it's name was changed from "verifyIfExists" to findById.
+     *
+     * @param id                        id to search
+     * @throws BeerNotFoundException    in case of no beer is found, given id
      */
-    private Beer verifyIfExists(Long id) throws BeerNotFoundException{
+    public Beer findById(Long id) throws BeerNotFoundException{
         return beerRepository.findById(id).orElseThrow(() -> new BeerNotFoundException(id));
     }
 }

@@ -21,6 +21,5 @@ public class ShopkeeperDTO {
     @Column(nullable = false, unique = true)
     private String name;
 
-    @ManyToMany
     private List<BeerDTO> beers;
 }

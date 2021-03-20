@@ -7,11 +7,13 @@ import one.digitalinnovation.beerstock.domains.entities.Shopkeeper;
 import one.digitalinnovation.beerstock.domains.mappers.ShopkeeperMapper;
 import one.digitalinnovation.beerstock.domains.repositories.ShopkeeperRepository;
 import one.digitalinnovation.beerstock.infrastructure.exceptions.BeerNotFoundException;
+import one.digitalinnovation.beerstock.infrastructure.exceptions.NoBeerProvidedException;
 import one.digitalinnovation.beerstock.infrastructure.exceptions.ShopkeeperAlreadyRegisteredException;
 import one.digitalinnovation.beerstock.infrastructure.exceptions.ShopkeeperNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -21,7 +23,11 @@ import java.util.stream.Collectors;
 public class ShopkeeperService {
 
     private final ShopkeeperRepository shopkeeperRepository;
+
+    private final BeerService beerService;
+
     private static final ShopkeeperMapper shopkeeperMapper = ShopkeeperMapper.INSTANCE;
+
 
     public ShopkeeperDTO createShopkeeper(ShopkeeperDTO shopkeeperDTO)
             throws ShopkeeperAlreadyRegisteredException {
@@ -51,11 +57,27 @@ public class ShopkeeperService {
         shopkeeperRepository.deleteById(id);
     }
 
-    public ShopkeeperDTO addBeersToShopkeeper(Long id, List<Long> beerIds) throws ShopkeeperNotFoundException {
-        return null;
+    public ShopkeeperDTO addBeersToShopkeeper(Long id, List<Long> beerIds)
+            throws ShopkeeperNotFoundException, BeerNotFoundException, NoBeerProvidedException {
+        Shopkeeper shopkeeper = verifyIfExists(id);
+        List<Beer> beers = new ArrayList<>();
+
+        if (beerIds == null || beerIds.isEmpty()) {
+            throw new NoBeerProvidedException();
+        }
+
+        for (Long beerId: beerIds) {
+            Beer beer = beerService.findById(beerId);
+            beers.add(beer);
+        }
+        shopkeeper.setBeers(beers);
+        Shopkeeper savedShopkeeper = shopkeeperRepository.save(shopkeeper);
+
+        return shopkeeperMapper.toDTO(savedShopkeeper);
     }
 
-    public ShopkeeperDTO removeBeersFromShopkeeper(Long id, List<Long> beerIds) throws ShopkeeperNotFoundException {
+    public ShopkeeperDTO removeBeersFromShopkeeper(Long id, List<Long> beerIds)
+            throws ShopkeeperNotFoundException, BeerNotFoundException {
         return null;
     }
 

@@ -7,6 +7,7 @@ import lombok.NoArgsConstructor;
 import one.digitalinnovation.beerstock.domains.enums.BeerType;
 
 import javax.persistence.*;
+import java.util.Objects;
 
 @Entity
 @Data
@@ -33,4 +34,13 @@ public class Beer {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private BeerType beerType;
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof Beer)) return false;
+        Beer beer = (Beer) o;
+
+        return Objects.equals(this.getId(), beer.getId());
+    }
 }
