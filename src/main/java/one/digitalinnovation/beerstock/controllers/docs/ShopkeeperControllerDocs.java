@@ -7,6 +7,7 @@ import io.swagger.annotations.ApiResponses;
 import one.digitalinnovation.beerstock.domains.dtos.BeerDTO;
 import one.digitalinnovation.beerstock.domains.dtos.ShopkeeperDTO;
 import one.digitalinnovation.beerstock.infrastructure.exceptions.BeerNotFoundException;
+import one.digitalinnovation.beerstock.infrastructure.exceptions.NoBeerProvidedException;
 import one.digitalinnovation.beerstock.infrastructure.exceptions.ShopkeeperNotFoundException;
 import one.digitalinnovation.beerstock.infrastructure.exceptions.ShopkeeperAlreadyRegisteredException;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -48,7 +49,7 @@ public interface ShopkeeperControllerDocs {
             @ApiResponse(code = 400, message = "Check beer's id or shopkeeper's id")
     })
     ShopkeeperDTO addBeersToShopkeeper(@PathVariable Long id, List<Long> beerIds)
-            throws ShopkeeperNotFoundException, BeerNotFoundException;
+            throws ShopkeeperNotFoundException, BeerNotFoundException, NoBeerProvidedException;
 
     @ApiOperation(value = "Removes one or more beers in a shopkeeper's list")
     @ApiResponses(value = {
@@ -56,6 +57,6 @@ public interface ShopkeeperControllerDocs {
             @ApiResponse(code = 400, message = "Check beer's id or shopkeeper's id")
     })
     ShopkeeperDTO removeBeersFromShopkeeper(@PathVariable Long id, List<Long> beerIds)
-            throws ShopkeeperNotFoundException, BeerNotFoundException;
+            throws ShopkeeperNotFoundException, BeerNotFoundException, NoBeerProvidedException;
 
 }

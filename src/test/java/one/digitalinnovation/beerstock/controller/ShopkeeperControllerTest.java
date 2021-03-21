@@ -1,8 +1,12 @@
 package one.digitalinnovation.beerstock.controller;
 
+import one.digitalinnovation.beerstock.builder.BeerDTOBuilder;
 import one.digitalinnovation.beerstock.builder.ShopkeeperDTOBuilder;
 import one.digitalinnovation.beerstock.controllers.ShopkeeperController;
+import one.digitalinnovation.beerstock.domains.dtos.BeerDTO;
 import one.digitalinnovation.beerstock.domains.dtos.ShopkeeperDTO;
+import one.digitalinnovation.beerstock.infrastructure.exceptions.BeerNotFoundException;
+import one.digitalinnovation.beerstock.infrastructure.exceptions.NoBeerProvidedException;
 import one.digitalinnovation.beerstock.infrastructure.exceptions.ShopkeeperNotFoundException;
 import one.digitalinnovation.beerstock.services.ShopkeeperService;
 import org.junit.jupiter.api.BeforeEach;
@@ -17,7 +21,12 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.servlet.view.json.MappingJackson2JsonView;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static one.digitalinnovation.beerstock.constants.BeerstockConstants.*;
 import static one.digitalinnovation.beerstock.utils.JsonConversionUtils.asJsonString;
@@ -135,7 +144,7 @@ class ShopkeeperControllerTest {
     }
 
     @Test
-    void whenDELETEIsCalledWithInvalidIdThenNoContentStatusIsReturned() throws Exception {
+    void whenDELETEIsCalledWithInvalidIdThenNotFoundStatusIsReturned() throws Exception {
         // when
         doThrow(ShopkeeperNotFoundException.class).when(shopkeeperService).deleteById(INVALID_SHOPKEEPER_ID);
 
@@ -145,5 +154,89 @@ class ShopkeeperControllerTest {
         mockMvc.perform(delete(path)
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void whenPOSTIsCalledWithValidBeersIdsThenOkStatusIsReturned()
+            throws Exception {
+        ShopkeeperDTO shopkeeperDTO = ShopkeeperDTOBuilder.builder().build().toShopkeeperDTO();
+        BeerDTO firstBeerDTO = BeerDTOBuilder.builder().build().toBeerDTO();
+        BeerDTO secondBeerDTO = new BeerDTO(
+                firstBeerDTO.getId() + 1L,
+                firstBeerDTO.getName() + "2",
+                firstBeerDTO.getBrand(),
+                firstBeerDTO.getQuantity(),
+                firstBeerDTO.getMax(),
+                firstBeerDTO.getBeerType()
+        );
+
+        shopkeeperDTO.setBeers(Stream.of(firstBeerDTO, secondBeerDTO).collect(Collectors.toList()));
+
+        when(
+                shopkeeperService.addBeersToShopkeeper(
+                        shopkeeperDTO.getId(),
+                        shopkeeperDTO.getBeers().stream().map(BeerDTO::getId).collect(Collectors.toList()))
+        ).thenReturn(shopkeeperDTO);
+
+        var path = BASE_URI_PATH +
+                SHOPKEEPERS_URI_PATH +
+                "/" + shopkeeperDTO.getId() +
+                ADD_BEER_TO_SHOPKEEPER_URI_PATH;
+        mockMvc.perform(post(path)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(asJsonString(
+                        shopkeeperDTO.getBeers().stream().map(BeerDTO::getId).collect(Collectors.toList())
+                )))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath(
+                        "$.beers[0].name",
+                        is(shopkeeperDTO.getBeers().get(0).getName())
+                ))
+                .andExpect(jsonPath(
+                        "$.beers[1].name",
+                        is(shopkeeperDTO.getBeers().get(1).getName())
+                ));
+    }
+
+    @Test
+    void whenPOSTIsCalledWithInvalidBeersIdsThenNotFoundStatusIsReturned()
+            throws Exception {
+        List<Long> invalidBeers = Stream.of(1L, 2L).collect(Collectors.toList());
+
+        // when
+        doThrow(BeerNotFoundException.class)
+                .when(shopkeeperService)
+                .addBeersToShopkeeper(VALID_SHOPKEEPER_ID, invalidBeers);
+
+        var path = BASE_URI_PATH +
+                SHOPKEEPERS_URI_PATH +
+                "/" + VALID_SHOPKEEPER_ID +
+                ADD_BEER_TO_SHOPKEEPER_URI_PATH;
+        // then
+        mockMvc.perform(post(path)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(asJsonString(invalidBeers)))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void whenPOSTIsCalledWithNoBeersIdsThenBadRequestStatusIsReturned()
+            throws Exception {
+        List<Long> invalidBeers = new ArrayList<>();
+
+        // when
+        doThrow(NoBeerProvidedException.class)
+                .when(shopkeeperService)
+                .addBeersToShopkeeper(VALID_SHOPKEEPER_ID, invalidBeers);
+
+        var path = BASE_URI_PATH +
+                SHOPKEEPERS_URI_PATH +
+                "/" + VALID_SHOPKEEPER_ID +
+                ADD_BEER_TO_SHOPKEEPER_URI_PATH;
+        // then
+        mockMvc.perform(post(path)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(asJsonString(invalidBeers)))
+                .andExpect(status().isBadRequest());
     }
 }

@@ -4,6 +4,7 @@ import lombok.AllArgsConstructor;
 import one.digitalinnovation.beerstock.controllers.docs.ShopkeeperControllerDocs;
 import one.digitalinnovation.beerstock.domains.dtos.ShopkeeperDTO;
 import one.digitalinnovation.beerstock.infrastructure.exceptions.BeerNotFoundException;
+import one.digitalinnovation.beerstock.infrastructure.exceptions.NoBeerProvidedException;
 import one.digitalinnovation.beerstock.infrastructure.exceptions.ShopkeeperAlreadyRegisteredException;
 import one.digitalinnovation.beerstock.infrastructure.exceptions.ShopkeeperNotFoundException;
 import one.digitalinnovation.beerstock.services.ShopkeeperService;
@@ -43,19 +44,19 @@ public class ShopkeeperController implements ShopkeeperControllerDocs {
 
     @DeleteMapping(ID_URI_PATH)
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void deleteById(Long id) throws ShopkeeperNotFoundException {
+    public void deleteById(@PathVariable Long id) throws ShopkeeperNotFoundException {
         shopkeeperService.deleteById(id);
     }
 
     @PostMapping(ID_URI_PATH + ADD_BEER_TO_SHOPKEEPER_URI_PATH)
-    public ShopkeeperDTO addBeersToShopkeeper(Long id, List<Long> beerIds)
-            throws ShopkeeperNotFoundException, BeerNotFoundException {
-        return null;
+    public ShopkeeperDTO addBeersToShopkeeper(@PathVariable Long id, @RequestBody List<Long> beerIds)
+            throws ShopkeeperNotFoundException, BeerNotFoundException, NoBeerProvidedException {
+        return shopkeeperService.addBeersToShopkeeper(id, beerIds);
     }
 
     @PostMapping(ID_URI_PATH + RM_BEER_TO_SHOPKEEPER_URI_PATH)
     public ShopkeeperDTO removeBeersFromShopkeeper(Long id, List<Long> beerIds)
-            throws ShopkeeperNotFoundException, BeerNotFoundException {
+            throws ShopkeeperNotFoundException, BeerNotFoundException, NoBeerProvidedException {
         return null;
     }
 }
