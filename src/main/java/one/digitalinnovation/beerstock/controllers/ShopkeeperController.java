@@ -1,11 +1,13 @@
 package one.digitalinnovation.beerstock.controllers;
 
+import lombok.AllArgsConstructor;
 import one.digitalinnovation.beerstock.controllers.docs.ShopkeeperControllerDocs;
-import one.digitalinnovation.beerstock.domains.dtos.BeerDTO;
 import one.digitalinnovation.beerstock.domains.dtos.ShopkeeperDTO;
 import one.digitalinnovation.beerstock.infrastructure.exceptions.BeerNotFoundException;
 import one.digitalinnovation.beerstock.infrastructure.exceptions.ShopkeeperAlreadyRegisteredException;
 import one.digitalinnovation.beerstock.infrastructure.exceptions.ShopkeeperNotFoundException;
+import one.digitalinnovation.beerstock.services.ShopkeeperService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
@@ -16,13 +18,16 @@ import static one.digitalinnovation.beerstock.constants.BeerstockConstants.*;
 
 @RestController
 @RequestMapping(BASE_URI_PATH + SHOPKEEPERS_URI_PATH)
+@AllArgsConstructor(onConstructor = @__(@Autowired))
 public class ShopkeeperController implements ShopkeeperControllerDocs {
+
+    private final ShopkeeperService shopkeeperService;
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public ShopkeeperDTO createShopkeeper(@RequestBody @Valid ShopkeeperDTO shopkeeperDTO)
             throws ShopkeeperAlreadyRegisteredException {
-        return null;
+        return shopkeeperService.createShopkeeper(shopkeeperDTO);
     }
 
     @GetMapping(NAME_URI_PATH)

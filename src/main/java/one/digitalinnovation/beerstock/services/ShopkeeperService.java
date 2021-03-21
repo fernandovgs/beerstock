@@ -79,15 +79,14 @@ public class ShopkeeperService {
     public ShopkeeperDTO removeBeersFromShopkeeper(Long id, List<Long> beerIds)
             throws ShopkeeperNotFoundException, BeerNotFoundException, NoBeerProvidedException {
         Shopkeeper shopkeeper = verifyIfExists(id);
-        List<Beer> beers = new ArrayList<>();
 
         if (beerIds == null || beerIds.isEmpty()) {
             throw new NoBeerProvidedException();
         }
 
         for (Long beerId: beerIds) {
-            Beer beer = beerService.findById(beerId);
-            beers.add(beer);
+            // If it is not found, then an exception occurs
+            beerService.findById(beerId);
         }
 
         shopkeeper.setBeers(
