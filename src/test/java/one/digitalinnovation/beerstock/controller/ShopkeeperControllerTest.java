@@ -3,6 +3,7 @@ package one.digitalinnovation.beerstock.controller;
 import one.digitalinnovation.beerstock.builder.ShopkeeperDTOBuilder;
 import one.digitalinnovation.beerstock.controllers.ShopkeeperController;
 import one.digitalinnovation.beerstock.domains.dtos.ShopkeeperDTO;
+import one.digitalinnovation.beerstock.infrastructure.exceptions.ShopkeeperNotFoundException;
 import one.digitalinnovation.beerstock.services.ShopkeeperService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -20,6 +21,7 @@ import static one.digitalinnovation.beerstock.constants.BeerstockConstants.*;
 import static one.digitalinnovation.beerstock.utils.JsonConversionUtils.asJsonString;
 import static org.hamcrest.core.Is.is;
 import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -70,5 +72,34 @@ class ShopkeeperControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(asJsonString(shopkeeperDTO)))
                 .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void whenGETIsCalledWithValidNameThenAnOkStatusIsReturned() throws Exception {
+        // given
+        ShopkeeperDTO shopkeeperDTO = ShopkeeperDTOBuilder.builder().build().toShopkeeperDTO();
+
+        // when
+        when(shopkeeperService.findByName(shopkeeperDTO.getName())).thenReturn(shopkeeperDTO);
+
+        // then
+        mockMvc.perform(get(BASE_URI_PATH + SHOPKEEPERS_URI_PATH + "/" + shopkeeperDTO.getName())
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.name", is(shopkeeperDTO.getName())));
+    }
+
+    @Test
+    void whenGETIsCalledWithoutValidNameThenAnNotFoundStatusIsReturned() throws Exception {
+        // given
+        ShopkeeperDTO shopkeeperDTO = ShopkeeperDTOBuilder.builder().build().toShopkeeperDTO();
+
+        // when
+        when(shopkeeperService.findByName(shopkeeperDTO.getName())).thenThrow(ShopkeeperNotFoundException.class);
+
+        // then
+        mockMvc.perform(get(BASE_URI_PATH + SHOPKEEPERS_URI_PATH + "/" + shopkeeperDTO.getName())
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isNotFound());
     }
 }

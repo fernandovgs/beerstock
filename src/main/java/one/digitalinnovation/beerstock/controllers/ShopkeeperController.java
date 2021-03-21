@@ -33,7 +33,7 @@ public class ShopkeeperController implements ShopkeeperControllerDocs {
     @GetMapping(NAME_URI_PATH)
     public ShopkeeperDTO findByName(@PathVariable String name)
             throws ShopkeeperNotFoundException {
-        return null;
+        return shopkeeperService.findByName(name);
     }
 
     @GetMapping
