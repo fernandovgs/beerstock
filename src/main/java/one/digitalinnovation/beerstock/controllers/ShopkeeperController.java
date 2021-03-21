@@ -38,7 +38,7 @@ public class ShopkeeperController implements ShopkeeperControllerDocs {
 
     @GetMapping
     public List<ShopkeeperDTO> listShopkeepers() {
-        return null;
+        return shopkeeperService.listAll();
     }
 
     @DeleteMapping(ID_URI_PATH)

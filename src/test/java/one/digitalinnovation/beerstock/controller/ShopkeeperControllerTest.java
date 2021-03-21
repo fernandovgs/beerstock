@@ -17,6 +17,8 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.servlet.view.json.MappingJackson2JsonView;
 
+import java.util.Collections;
+
 import static one.digitalinnovation.beerstock.constants.BeerstockConstants.*;
 import static one.digitalinnovation.beerstock.utils.JsonConversionUtils.asJsonString;
 import static org.hamcrest.core.Is.is;
@@ -101,5 +103,20 @@ class ShopkeeperControllerTest {
         mockMvc.perform(get(BASE_URI_PATH + SHOPKEEPERS_URI_PATH + "/" + shopkeeperDTO.getName())
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void whenGETListIsCalledThenOkStatusIsReturned() throws Exception {
+        // given
+        ShopkeeperDTO shopkeeperDTO = ShopkeeperDTOBuilder.builder().build().toShopkeeperDTO();
+
+        // when
+        when(shopkeeperService.listAll()).thenReturn(Collections.singletonList(shopkeeperDTO));
+
+        // then
+        mockMvc.perform(get(BASE_URI_PATH + SHOPKEEPERS_URI_PATH)
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].name", is(shopkeeperDTO.getName())));
     }
 }

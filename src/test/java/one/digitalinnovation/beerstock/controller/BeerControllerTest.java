@@ -115,7 +115,7 @@ class BeerControllerTest {
     }
 
     @Test
-    void whenGETListIsCalledWithoutValidNameThenAnNotFoundStatusIsReturned() throws Exception {
+    void whenGETListIsCalledThenOkStatusIsReturned() throws Exception {
         // given
         BeerDTO beerDTO = BeerDTOBuilder.builder().build().toBeerDTO();
 
