@@ -22,9 +22,9 @@ import java.util.Collections;
 import static one.digitalinnovation.beerstock.constants.BeerstockConstants.*;
 import static one.digitalinnovation.beerstock.utils.JsonConversionUtils.asJsonString;
 import static org.hamcrest.core.Is.is;
-import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.mockito.Mockito.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -38,6 +38,9 @@ class ShopkeeperControllerTest {
 
     @InjectMocks
     private ShopkeeperController shopkeeperController;
+
+    private static final Long VALID_SHOPKEEPER_ID = 1L;
+    private static final Long INVALID_SHOPKEEPER_ID = 2L;
 
     @BeforeEach
     void setUp() {
@@ -118,5 +121,29 @@ class ShopkeeperControllerTest {
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[0].name", is(shopkeeperDTO.getName())));
+    }
+
+    @Test
+    void whenDELETEIsCalledWithValidIdThenNoContentStatusIsReturned() throws Exception {
+        // when
+        doNothing().when(shopkeeperService).deleteById(VALID_SHOPKEEPER_ID);
+
+        // then
+        mockMvc.perform(delete(BASE_URI_PATH + SHOPKEEPERS_URI_PATH + "/" + VALID_SHOPKEEPER_ID)
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isNoContent());
+    }
+
+    @Test
+    void whenDELETEIsCalledWithInvalidIdThenNoContentStatusIsReturned() throws Exception {
+        // when
+        doThrow(ShopkeeperNotFoundException.class).when(shopkeeperService).deleteById(INVALID_SHOPKEEPER_ID);
+
+        // /api/v1/shopkeepers/2
+        var path = BASE_URI_PATH + SHOPKEEPERS_URI_PATH + "/" + INVALID_SHOPKEEPER_ID;
+        // then
+        mockMvc.perform(delete(path)
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isNotFound());
     }
 }

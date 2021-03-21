@@ -40,7 +40,7 @@ public interface ShopkeeperControllerDocs {
             @ApiResponse(code = 204, message = "Success shopkeeper deleted in the system"),
             @ApiResponse(code = 404, message = "Shopkeeper with given id not found.")
     })
-    void deleteById(@PathVariable Long id);
+    void deleteById(@PathVariable Long id) throws ShopkeeperNotFoundException;
 
     @ApiOperation(value = "Adds one or more beers in a shopkeeper's list")
     @ApiResponses(value = {

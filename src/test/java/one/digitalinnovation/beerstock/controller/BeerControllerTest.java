@@ -146,7 +146,8 @@ class BeerControllerTest {
     void whenDELETEIsCalledWithInvalidIdThenNoContentStatusIsReturned() throws Exception {
         // when
         doThrow(BeerNotFoundException.class).when(beerService).deleteById(INVALID_BEER_ID);
-// /api/v1/beers/2
+
+        // /api/v1/beers/2
         var path = BASE_URI_PATH + BEERS_URI_PATH + "/" + INVALID_BEER_ID;
         // then
         mockMvc.perform(delete(path)

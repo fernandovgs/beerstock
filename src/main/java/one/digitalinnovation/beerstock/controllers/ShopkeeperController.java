@@ -43,8 +43,8 @@ public class ShopkeeperController implements ShopkeeperControllerDocs {
 
     @DeleteMapping(ID_URI_PATH)
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void deleteById(Long id) {
-
+    public void deleteById(Long id) throws ShopkeeperNotFoundException {
+        shopkeeperService.deleteById(id);
     }
 
     @PostMapping(ID_URI_PATH + ADD_BEER_TO_SHOPKEEPER_URI_PATH)
