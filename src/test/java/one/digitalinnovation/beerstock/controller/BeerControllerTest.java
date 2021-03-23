@@ -4,7 +4,6 @@ import one.digitalinnovation.beerstock.builder.BeerDTOBuilder;
 import one.digitalinnovation.beerstock.controllers.BeerController;
 import one.digitalinnovation.beerstock.domains.dtos.BeerDTO;
 import one.digitalinnovation.beerstock.domains.dtos.QuantityDTO;
-import one.digitalinnovation.beerstock.infrastructure.exceptions.BeerAlreadyRegisteredException;
 import one.digitalinnovation.beerstock.infrastructure.exceptions.BeerNotFoundException;
 import one.digitalinnovation.beerstock.infrastructure.exceptions.BeerStockExceededException;
 import one.digitalinnovation.beerstock.services.BeerService;
@@ -17,7 +16,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.web.PageableHandlerMethodArgumentResolver;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.servlet.view.json.MappingJackson2JsonView;
 
@@ -29,15 +27,13 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.hamcrest.core.Is.is;
+import static one.digitalinnovation.beerstock.constants.BeerstockConstants.*;
 
 @ExtendWith(MockitoExtension.class)
 class BeerControllerTest {
 
-    private static final String BEER_API_URL_PATH = "/api/v1/beers";
     private static final long VALID_BEER_ID = 1L;
     private static final long INVALID_BEER_ID = 2L;
-    private static final String BEER_API_SUBPATH_INCREMENT_URL = "/increment";
-    private static final String BEER_API_SUBPATH_DECREMENT_URL = "/decrement";
 
     // To mock endpoint requests (can mock GraphQL, which is a "simple" POST at the end of the day)
     private MockMvc mockMvc;
@@ -50,7 +46,6 @@ class BeerControllerTest {
 
     @BeforeEach
     void setUp() {
-//        TODO study each builder method
         mockMvc = MockMvcBuilders.standaloneSetup(beerController)
             .setCustomArgumentResolvers(new PageableHandlerMethodArgumentResolver())
             .setViewResolvers((s, locale) -> new MappingJackson2JsonView())
@@ -66,7 +61,7 @@ class BeerControllerTest {
         when(beerService.createBeer(beerDTO)).thenReturn(beerDTO);
 
         // then
-        mockMvc.perform(post(BEER_API_URL_PATH)
+        mockMvc.perform(post(BASE_URI_PATH + BEERS_URI_PATH)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(asJsonString(beerDTO)))
                 .andExpect(status().isCreated())
@@ -82,7 +77,7 @@ class BeerControllerTest {
         beerDTO.setBrand(null);
 
         // then
-        mockMvc.perform(post(BEER_API_URL_PATH)
+        mockMvc.perform(post(BASE_URI_PATH + BEERS_URI_PATH)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(asJsonString(beerDTO)))
                 .andExpect(status().isBadRequest());
@@ -97,7 +92,7 @@ class BeerControllerTest {
         when(beerService.findByName(beerDTO.getName())).thenReturn(beerDTO);
 
         // then
-        mockMvc.perform(get(BEER_API_URL_PATH + "/" + beerDTO.getName())
+        mockMvc.perform(get(BASE_URI_PATH + BEERS_URI_PATH + "/" + beerDTO.getName())
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.name", is(beerDTO.getName())))
@@ -114,13 +109,13 @@ class BeerControllerTest {
         when(beerService.findByName(beerDTO.getName())).thenThrow(BeerNotFoundException.class);
 
         // then
-        mockMvc.perform(get(BEER_API_URL_PATH + "/" + beerDTO.getName())
+        mockMvc.perform(get(BASE_URI_PATH + BEERS_URI_PATH + "/" + beerDTO.getName())
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isNotFound());
     }
 
     @Test
-    void whenGETListIsCalledWithoutValidNameThenAnNotFoundStatusIsReturned() throws Exception {
+    void whenGETListIsCalledThenOkStatusIsReturned() throws Exception {
         // given
         BeerDTO beerDTO = BeerDTOBuilder.builder().build().toBeerDTO();
 
@@ -128,7 +123,7 @@ class BeerControllerTest {
         when(beerService.listAll()).thenReturn(Collections.singletonList(beerDTO));
 
         // then
-        mockMvc.perform(get(BEER_API_URL_PATH)
+        mockMvc.perform(get(BASE_URI_PATH + BEERS_URI_PATH)
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[0].name", is(beerDTO.getName())))
@@ -142,18 +137,20 @@ class BeerControllerTest {
         doNothing().when(beerService).deleteById(VALID_BEER_ID);
 
         // then
-        mockMvc.perform(delete(BEER_API_URL_PATH + "/" + VALID_BEER_ID)
+        mockMvc.perform(delete(BASE_URI_PATH + BEERS_URI_PATH + "/" + VALID_BEER_ID)
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isNoContent());
     }
 
     @Test
-    void whenDELETEIsCalledWithInvalidIdThenNoContentStatusIsReturned() throws Exception {
+    void whenDELETEIsCalledWithInvalidIdThenNotFoundStatusIsReturned() throws Exception {
         // when
         doThrow(BeerNotFoundException.class).when(beerService).deleteById(INVALID_BEER_ID);
 
+        // /api/v1/beers/2
+        var path = BASE_URI_PATH + BEERS_URI_PATH + "/" + INVALID_BEER_ID;
         // then
-        mockMvc.perform(delete(BEER_API_URL_PATH + "/" + INVALID_BEER_ID)
+        mockMvc.perform(delete(path)
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isNotFound());
     }
@@ -167,7 +164,7 @@ class BeerControllerTest {
 
         when(beerService.increment(VALID_BEER_ID, quantityDTO.getQuantity())).thenReturn(beerDTO);
 
-        var urlPath = BEER_API_URL_PATH + "/" + VALID_BEER_ID + "/" + BEER_API_SUBPATH_INCREMENT_URL;
+        var urlPath = BASE_URI_PATH + BEERS_URI_PATH + "/" + VALID_BEER_ID + INCREMENT_URI_PATH;
         mockMvc.perform(patch(urlPath)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(asJsonString(quantityDTO)))
@@ -189,7 +186,7 @@ class BeerControllerTest {
                 .when(beerService)
                 .increment(VALID_BEER_ID, quantityDTO.getQuantity());
 
-        var urlPath = BEER_API_URL_PATH + "/" + VALID_BEER_ID + "/" + BEER_API_SUBPATH_INCREMENT_URL;
+        var urlPath = BASE_URI_PATH + BEERS_URI_PATH + "/" + VALID_BEER_ID + INCREMENT_URI_PATH;
         mockMvc.perform(patch(urlPath)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(asJsonString(quantityDTO)))
@@ -205,7 +202,7 @@ class BeerControllerTest {
 
         when(beerService.decrement(VALID_BEER_ID, quantityDTO.getQuantity())).thenReturn(beerDTO);
 
-        var urlPath = BEER_API_URL_PATH + "/" + VALID_BEER_ID + "/" + BEER_API_SUBPATH_DECREMENT_URL;
+        var urlPath = BASE_URI_PATH + BEERS_URI_PATH + "/" + VALID_BEER_ID + DECREMENT_URI_PATH;
         mockMvc.perform(patch(urlPath)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(asJsonString(quantityDTO)))
@@ -227,7 +224,7 @@ class BeerControllerTest {
                 .when(beerService)
                 .decrement(VALID_BEER_ID, quantityDTO.getQuantity());
 
-        var urlPath = BEER_API_URL_PATH + "/" + VALID_BEER_ID + "/" + BEER_API_SUBPATH_DECREMENT_URL;
+        var urlPath = BASE_URI_PATH + BEERS_URI_PATH + "/" + VALID_BEER_ID + "/" + DECREMENT_URI_PATH;
         mockMvc.perform(patch(urlPath)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(asJsonString(quantityDTO)))

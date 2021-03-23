@@ -151,7 +151,9 @@ class BeerServiceTest {
     @Test
     void whenExclusionIsCalledWithInvalidIdThenABeerShouldBeDeleted() {
         BeerDTO expectedDeletedBeerDTO = BeerDTOBuilder.builder().build().toBeerDTO();
+
         when(beerRepository.findById(expectedDeletedBeerDTO.getId())).thenReturn(Optional.empty());
+
         assertThrows(BeerNotFoundException.class, () -> beerService.deleteById(expectedDeletedBeerDTO.getId()));
     }
 
