@@ -31,6 +31,7 @@ import java.util.stream.Stream;
 import static one.digitalinnovation.beerstock.constants.BeerstockConstants.*;
 import static one.digitalinnovation.beerstock.utils.JsonConversionUtils.asJsonString;
 import static org.hamcrest.core.Is.is;
+import static org.hamcrest.Matchers.hasSize;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
@@ -157,7 +158,7 @@ class ShopkeeperControllerTest {
     }
 
     @Test
-    void whenPOSTIsCalledWithValidBeersIdsThenOkStatusIsReturned()
+    void whenPOSTonAddIsCalledWithValidBeersIdsThenOkStatusIsReturned()
             throws Exception {
         ShopkeeperDTO shopkeeperDTO = ShopkeeperDTOBuilder.builder().build().toShopkeeperDTO();
         BeerDTO firstBeerDTO = BeerDTOBuilder.builder().build().toBeerDTO();
@@ -199,7 +200,7 @@ class ShopkeeperControllerTest {
     }
 
     @Test
-    void whenPOSTIsCalledWithInvalidBeersIdsThenNotFoundStatusIsReturned()
+    void whenPOSTonAddIsCalledWithInvalidBeersIdsThenNotFoundStatusIsReturned()
             throws Exception {
         List<Long> invalidBeers = Stream.of(1L, 2L).collect(Collectors.toList());
 
@@ -220,7 +221,7 @@ class ShopkeeperControllerTest {
     }
 
     @Test
-    void whenPOSTIsCalledWithNoBeersIdsThenBadRequestStatusIsReturned()
+    void whenPOSTonAddIsCalledWithNoBeersIdsThenBadRequestStatusIsReturned()
             throws Exception {
         List<Long> invalidBeers = new ArrayList<>();
 
@@ -233,6 +234,71 @@ class ShopkeeperControllerTest {
                 SHOPKEEPERS_URI_PATH +
                 "/" + VALID_SHOPKEEPER_ID +
                 ADD_BEER_TO_SHOPKEEPER_URI_PATH;
+        // then
+        mockMvc.perform(post(path)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(asJsonString(invalidBeers)))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void whenPOSTonRemoveIsCalledWithValidBeersIdsThenOkStatusIsReturned()
+            throws Exception {
+        ShopkeeperDTO shopkeeperDTO = ShopkeeperDTOBuilder.builder().build().toShopkeeperDTO();
+        List<Long> beersToRemove = Stream.of(1L, 2L).collect(Collectors.toList());
+
+        when(
+                shopkeeperService.removeBeersFromShopkeeper(
+                        shopkeeperDTO.getId(),
+                        beersToRemove
+        )).thenReturn(shopkeeperDTO);
+
+        var path = BASE_URI_PATH +
+                SHOPKEEPERS_URI_PATH +
+                "/" + shopkeeperDTO.getId() +
+                RM_BEER_TO_SHOPKEEPER_URI_PATH;
+        mockMvc.perform(post(path)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(asJsonString(beersToRemove)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.beers", hasSize(0)));
+    }
+
+    @Test
+    void whenPOSTonRemoveIsCalledWithInvalidBeersIdsThenNotFoundStatusIsReturned()
+            throws Exception {
+        List<Long> invalidBeers = Stream.of(1L, 2L).collect(Collectors.toList());
+
+        // when
+        doThrow(BeerNotFoundException.class)
+                .when(shopkeeperService)
+                .removeBeersFromShopkeeper(VALID_SHOPKEEPER_ID, invalidBeers);
+
+        var path = BASE_URI_PATH +
+                SHOPKEEPERS_URI_PATH +
+                "/" + VALID_SHOPKEEPER_ID +
+                RM_BEER_TO_SHOPKEEPER_URI_PATH;
+        // then
+        mockMvc.perform(post(path)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(asJsonString(invalidBeers)))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void whenPOSTonRemoveIsCalledWithNoBeersIdsThenBadRequestStatusIsReturned()
+            throws Exception {
+        List<Long> invalidBeers = new ArrayList<>();
+
+        // when
+        doThrow(NoBeerProvidedException.class)
+                .when(shopkeeperService)
+                .removeBeersFromShopkeeper(VALID_SHOPKEEPER_ID, invalidBeers);
+
+        var path = BASE_URI_PATH +
+                SHOPKEEPERS_URI_PATH +
+                "/" + VALID_SHOPKEEPER_ID +
+                RM_BEER_TO_SHOPKEEPER_URI_PATH;
         // then
         mockMvc.perform(post(path)
                 .contentType(MediaType.APPLICATION_JSON)
